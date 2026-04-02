@@ -21,7 +21,7 @@ def parse_date(val):
         return None
 
 def format_fedex_bill(uploaded_file):
-    df = pd.read_excel(uploaded_file, sheet_name='Source File Bill')
+    df = pd.read_excel(uploaded_file)
 
     charge_desc_cols = []
     for col in df.columns:
