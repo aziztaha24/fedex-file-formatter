@@ -179,12 +179,12 @@ st.markdown(
     .footer {
         position: fixed;
         bottom: 10px;
-        right: 15px;
+        right: 20px;
         font-size: 13px;
         color: gray;
     }
     </style>
-    <div class="footer">Built by <b>Your Name</b></div>
+    <div class="footer">Taha</b></div>
     """,
     unsafe_allow_html=True
 )
