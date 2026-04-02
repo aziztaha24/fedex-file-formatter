@@ -173,5 +173,18 @@ if uploaded_file:
             )
         except Exception as e:
             st.error(f"❌ Error processing file: {e}")
-st.markdown("---")
-st.markdown("Taha")
+st.markdown(
+    """
+    <style>
+    .footer {
+        position: fixed;
+        bottom: 10px;
+        right: 15px;
+        font-size: 13px;
+        color: gray;
+    }
+    </style>
+    <div class="footer">Built by <b>Your Name</b></div>
+    """,
+    unsafe_allow_html=True
+)
