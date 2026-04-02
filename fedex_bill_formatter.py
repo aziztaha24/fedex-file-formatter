@@ -42,11 +42,22 @@ def format_fedex_bill(uploaded_file):
         service_type  = row.get('Service Type') if pd.notna(row.get('Service Type')) else row.get('Ground Service')
         transport_amt = row.get('Transportation Charge Amount')
 
+        # Extract just the number from Package ID (e.g. "PKG ID: 94201" -> 94201)
+        pkg_id_raw = row.get('Original Ref#2')
+        pkg_id = None
+        if pd.notna(pkg_id_raw):
+            try:
+                pkg_id = int(''.join(filter(str.isdigit, str(pkg_id_raw))))
+            except:
+                pkg_id = pkg_id_raw
+
+        # Convert tracking ID to integer
         try:
             tracking_id = int(float(tracking_id)) if pd.notna(tracking_id) else tracking_id
         except:
             pass
 
+        # Collect all charges
         charges = []
         for desc_col, amt_col in charge_desc_cols:
             desc = row.get(desc_col)
@@ -54,6 +65,7 @@ def format_fedex_bill(uploaded_file):
             if pd.notna(desc) and pd.notna(amt):
                 charges.append((str(desc).strip(), float(amt)))
 
+        # Subtract negative charges from transportation amount
         adj_transport = transport_amt
         if pd.notna(transport_amt):
             for desc, amt in charges:
@@ -64,6 +76,7 @@ def format_fedex_bill(uploaded_file):
             'Shipment Date': shipment_date,
             'Customer Ref.': customer_ref if pd.notna(customer_ref) else None,
             'Tracking ID': tracking_id,
+            'Package ID': pkg_id,
             'Invoice Date': invoice_date,
             'Invoice No.': int(invoice_no) if pd.notna(invoice_no) else invoice_no,
             'Invoice Total': invoice_total,
@@ -81,7 +94,7 @@ def format_fedex_bill(uploaded_file):
                     output_rows.append({**common, 'Service Type': desc, 'Amount': amt})
 
     result_df = pd.DataFrame(output_rows, columns=[
-        'Shipment Date', 'Customer Ref.', 'Tracking ID',
+        'Shipment Date', 'Customer Ref.', 'Tracking ID', 'Package ID',
         'Service Type', 'Invoice Date', 'Invoice No.', 'Invoice Total', 'Amount'
     ])
 
@@ -100,7 +113,10 @@ def format_fedex_bill(uploaded_file):
     left_align   = Alignment(horizontal='left',   vertical='center')
     thin_border  = Border(bottom=Side(style='thin', color='CCCCCC'))
 
-    col_widths = {'A': 16, 'B': 22, 'C': 18, 'D': 34, 'E': 14, 'F': 14, 'G': 14, 'H': 12}
+    col_widths = {
+        'A': 16, 'B': 22, 'C': 18, 'D': 14,
+        'E': 34, 'F': 14, 'G': 14, 'H': 14, 'I': 12
+    }
     for col_letter, width in col_widths.items():
         ws.column_dimensions[col_letter].width = width
 
@@ -116,14 +132,15 @@ def format_fedex_bill(uploaded_file):
             cell.font   = data_font
             cell.border = thin_border
             col_letter  = get_column_letter(col_idx)
-            if col_letter in ('A', 'E'):
+
+            if col_letter in ('A', 'F'):         # Shipment Date, Invoice Date
                 if cell.value is not None:
                     cell.number_format = 'MM/DD/YYYY'
                 cell.alignment = center_align
-            elif col_letter in ('C', 'F'):
+            elif col_letter in ('C', 'D', 'G'):  # Tracking ID, Package ID, Invoice No.
                 cell.number_format = '0'
                 cell.alignment = center_align
-            elif col_letter in ('G', 'H'):
+            elif col_letter in ('H', 'I'):        # Invoice Total, Amount
                 cell.number_format = '#,##0.00'
                 cell.alignment = center_align
             else:
@@ -135,6 +152,7 @@ def format_fedex_bill(uploaded_file):
     wb.save(final_output)
     final_output.seek(0)
     return final_output, result_df
+
 
 # --- UI ---
 uploaded_file = st.file_uploader("Upload FedEx Bill (.xlsx)", type=["xlsx"])
