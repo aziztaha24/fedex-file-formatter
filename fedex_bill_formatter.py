@@ -173,3 +173,5 @@ if uploaded_file:
             )
         except Exception as e:
             st.error(f"❌ Error processing file: {e}")
+st.markdown("---")
+st.markdown("Taha")
