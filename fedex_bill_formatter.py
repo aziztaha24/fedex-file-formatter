@@ -178,8 +178,8 @@ st.markdown(
     <style>
     .footer {
         position: fixed;
-        bottom: 50px;
-        right: 20px;
+        bottom: 40px;
+        right: 25px;
         font-size: 13px;
         color: gray;
     }
