@@ -21,7 +21,10 @@ def parse_date(val):
         return None
 
 def format_fedex_bill(uploaded_file):
-    df = pd.read_excel(uploaded_file)
+    if uploaded_file.name.endswith('.csv'):
+        df = pd.read_csv(uploaded_file)
+    else:
+        df = pd.read_excel(uploaded_file, sheet_name='Source File Bill')
 
     charge_desc_cols = []
     for col in df.columns:
@@ -155,7 +158,7 @@ def format_fedex_bill(uploaded_file):
 
 
 # --- UI ---
-uploaded_file = st.file_uploader("Upload FedEx Bill (.xlsx)", type=["xlsx"])
+uploaded_file = st.file_uploader("Upload FedEx Bill (.xlsx or .csv)", type=["xlsx", "csv"])
 
 if uploaded_file:
     with st.spinner("Processing..."):
