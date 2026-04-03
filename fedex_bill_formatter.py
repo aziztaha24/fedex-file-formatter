@@ -22,9 +22,9 @@ def parse_date(val):
 
 def format_fedex_bill(uploaded_file):
     if uploaded_file.name.endswith('.csv'):
-        df = pd.read_csv(uploaded_file)
-    else:
-        df = pd.read_excel(uploaded_file, sheet_name='Source File Bill')
+    df = pd.read_csv(uploaded_file, dtype={'Express or Ground Tracking ID': str})
+else:
+    df = pd.read_excel(uploaded_file, dtype={'Express or Ground Tracking ID': str})
 
     charge_desc_cols = []
     for col in df.columns:
@@ -39,7 +39,8 @@ def format_fedex_bill(uploaded_file):
         invoice_date  = parse_date(row.get('Invoice Date'))
         shipment_date = parse_date(row.get('Shipment Date'))
         customer_ref  = row.get('Original Customer Reference')
-        tracking_id   = row.get('Express or Ground Tracking ID')
+        # tracking_id   = row.get('Express or Ground Tracking ID')
+        tracking_id = row.get('Express or Ground Tracking ID')
         invoice_no    = row.get('Invoice Number')
         invoice_total = row.get('Original Amount Due')
         service_type  = row.get('Service Type') if pd.notna(row.get('Service Type')) else row.get('Ground Service')
@@ -55,10 +56,11 @@ def format_fedex_bill(uploaded_file):
                 pkg_id = pkg_id_raw
 
         # Convert tracking ID to integer
-        try:
-            tracking_id = int(float(tracking_id)) if pd.notna(tracking_id) else tracking_id
-        except:
-            pass
+        if pd.notna(tracking_id):
+            # Strip decimals by converting to string first, then take only digits
+            tracking_id = str(tracking_id).strip()
+            if '.' in tracking_id:
+                tracking_id = tracking_id.split('.')[0]
 
         # Collect all charges
         charges = []
