@@ -21,10 +21,10 @@ def parse_date(val):
         return None
 
 def format_fedex_bill(uploaded_file):
-if uploaded_file.name.endswith('.csv'):
-    df = pd.read_csv(uploaded_file, dtype={'Express or Ground Tracking ID': str})
-else:
-    df = pd.read_excel(uploaded_file, dtype={'Express or Ground Tracking ID': str})
+    if uploaded_file.name.endswith('.csv'):
+        df = pd.read_csv(uploaded_file, dtype={'Express or Ground Tracking ID': str})
+    else:
+        df = pd.read_excel(uploaded_file, dtype={'Express or Ground Tracking ID': str})
 
     charge_desc_cols = []
     for col in df.columns:
@@ -39,8 +39,7 @@ else:
         invoice_date  = parse_date(row.get('Invoice Date'))
         shipment_date = parse_date(row.get('Shipment Date'))
         customer_ref  = row.get('Original Customer Reference')
-        # tracking_id   = row.get('Express or Ground Tracking ID')
-        tracking_id = row.get('Express or Ground Tracking ID')
+        tracking_id   = row.get('Express or Ground Tracking ID')
         invoice_no    = row.get('Invoice Number')
         invoice_total = row.get('Original Amount Due')
         service_type  = row.get('Service Type') if pd.notna(row.get('Service Type')) else row.get('Ground Service')
@@ -55,9 +54,8 @@ else:
             except:
                 pkg_id = pkg_id_raw
 
-        # Convert tracking ID to integer
+        # Clean tracking ID - strip decimals
         if pd.notna(tracking_id):
-            # Strip decimals by converting to string first, then take only digits
             tracking_id = str(tracking_id).strip()
             if '.' in tracking_id:
                 tracking_id = tracking_id.split('.')[0]
@@ -178,6 +176,7 @@ if uploaded_file:
             )
         except Exception as e:
             st.error(f"❌ Error processing file: {e}")
+
 st.markdown(
     """
     <style>
@@ -189,7 +188,7 @@ st.markdown(
         color: gray;
     }
     </style>
-    <div class="footer">Taha</b></div>
+    <div class="footer">Taha</div>
     """,
     unsafe_allow_html=True
 )
