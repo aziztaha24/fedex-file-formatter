@@ -21,7 +21,7 @@ def parse_date(val):
         return None
 
 def format_fedex_bill(uploaded_file):
-    if uploaded_file.name.endswith('.csv'):
+if uploaded_file.name.endswith('.csv'):
     df = pd.read_csv(uploaded_file, dtype={'Express or Ground Tracking ID': str})
 else:
     df = pd.read_excel(uploaded_file, dtype={'Express or Ground Tracking ID': str})
